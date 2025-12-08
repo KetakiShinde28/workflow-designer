@@ -26,7 +26,7 @@ const nodeTypes = {
 };
 
 export default function WorkflowCanvas() {
-  const { workflow, addNode, addEdge: addEdgeToStore } = useWorkflowStore();
+ const { workflow, addNode, addEdge: addEdgeToStore, setSelectedNode } = useWorkflowStore();
 
   const onConnect = useCallback(
     (connection: Connection | Edge) => {
@@ -47,6 +47,8 @@ export default function WorkflowCanvas() {
         edges={workflow.edges}
         onConnect={onConnect}
 	nodeTypes={nodeTypes}
+	onNodeClick={(_, node) => setSelectedNode(node.id)}
+	onPaneClick={() => setSelectedNode(undefined)}
         fitView
       >
         <Background />

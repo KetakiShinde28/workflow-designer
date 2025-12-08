@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import type { Workflow, WorkflowNode, WorkflowEdge } from "../features/workflow/types/workflow";
+import type {
+  Workflow,
+  WorkflowNode,
+  WorkflowEdge,
+} from "../features/workflow/types/workflow";
 
 interface WorkflowState {
   workflow: Workflow;
@@ -11,6 +15,9 @@ interface WorkflowState {
   addEdge: (edge: WorkflowEdge) => void;
   removeEdge: (id: string) => void;
 
+  selectedNodeId?: string;
+  setSelectedNode: (id?: string) => void;
+
   reset: () => void;
 }
 
@@ -19,6 +26,10 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
     nodes: [],
     edges: [],
   },
+
+  selectedNodeId: undefined,
+
+  setSelectedNode: (id) => set(() => ({ selectedNodeId: id })),
 
   addNode: (node) =>
     set((state) => ({

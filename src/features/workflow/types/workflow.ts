@@ -1,30 +1,27 @@
-export type NodeType =
-  | "start"
-  | "task"
-  | "approval"
-  | "automated"
-  | "end";
-
-export interface BaseNodeData {
-  label: string;
-}
-
-export interface TaskNodeData extends BaseNodeData {
-  assignee: string;
-}
-
-export interface ApprovalNodeData extends BaseNodeData {
-  approver: string;
-}
-
-export interface AutomatedNodeData extends BaseNodeData {
-  script: string;
-}
-
 export interface WorkflowNode {
   id: string;
-  type: NodeType;
-  data: BaseNodeData | TaskNodeData | ApprovalNodeData | AutomatedNodeData;
+  type: string; // start, task, approval, automated, end
+  position: { x: number; y: number };
+  data: {
+    label?: string;
+
+    // Task
+    description?: string;
+    assignee?: string;
+    dueDate?: string;
+
+    // Approval
+    approverRole?: string;
+    threshold?: number;
+
+    // Automated
+    actionId?: string;
+    params?: Record<string, string>;
+
+    // End
+    endMessage?: string;
+    summary?: boolean;
+  };
 }
 
 export interface WorkflowEdge {
