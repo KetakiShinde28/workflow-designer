@@ -10,13 +10,15 @@ interface WorkflowState {
 
   addNode: (node: WorkflowNode) => void;
   updateNode: (id: string, data: Partial<WorkflowNode["data"]>) => void;
+  updateNodePosition: (id: string, position: { x: number; y: number }) => void;
+
   removeNode: (id: string) => void;
 
   addEdge: (edge: WorkflowEdge) => void;
   removeEdge: (id: string) => void;
 
-  selectedNodeId?: string;
-  setSelectedNode: (id?: string) => void;
+  selectedNodeId?: string | null;
+  setSelectedNodeId: (id: string | null) => void;
 
   reset: () => void;
 }
@@ -27,15 +29,30 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
     edges: [],
   },
 
-  selectedNodeId: undefined,
-
-  setSelectedNode: (id) => set(() => ({ selectedNodeId: id })),
-
   addNode: (node) =>
     set((state) => ({
       workflow: {
         ...state.workflow,
-        nodes: [...state.workflow.nodes, node],
+        nodes: [
+          ...state.workflow.nodes,
+          {
+            ...node,
+            position: {
+              x: 150 + Math.random() * 400,
+              y: 150 + Math.random() * 300,
+            },
+          },
+        ],
+      },
+    })),
+
+  updateNodePosition: (id, position) =>
+    set((state) => ({
+      workflow: {
+        ...state.workflow,
+        nodes: state.workflow.nodes.map((n) =>
+          n.id === id ? { ...n, position } : n
+        ),
       },
     })),
 
@@ -58,6 +75,7 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
           (e) => e.source !== id && e.target !== id
         ),
       },
+      selectedNodeId: null,
     })),
 
   addEdge: (edge) =>
@@ -76,11 +94,12 @@ export const useWorkflowStore = create<WorkflowState>((set) => ({
       },
     })),
 
+  selectedNodeId: null,
+  setSelectedNodeId: (id) => set(() => ({ selectedNodeId: id })),
+
   reset: () =>
     set(() => ({
-      workflow: {
-        nodes: [],
-        edges: [],
-      },
+      workflow: { nodes: [], edges: [] },
+      selectedNodeId: null,
     })),
 }));

@@ -1,12 +1,13 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import {
   ReactFlow,
   Background,
   Controls,
   MiniMap,
-  addEdge,
   type Connection,
   type Edge,
+  useNodesState,
+  useEdgesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -26,13 +27,38 @@ const nodeTypes = {
 };
 
 export default function WorkflowCanvas() {
- const { workflow, addNode, addEdge: addEdgeToStore, setSelectedNode } = useWorkflowStore();
+  const {
+    workflow,
+    addEdge: addEdgeToStore,
+    removeNode,
+    removeEdge,
+    selectedNodeId,
+    setSelectedNodeId,
+    updateNodePosition,
+  } = useWorkflowStore();
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(workflow.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(workflow.edges);
+
+  useEffect(() => {
+    setNodes(workflow.nodes);
+    setEdges(workflow.edges);
+  }, [workflow]);
+
+  const handleNodesChange = (changes: any) => {
+    changes.forEach((change: any) => {
+      if (change.type === "position" && change.position) {
+        updateNodePosition(change.id, change.position);
+      }
+    });
+
+    onNodesChange(changes);
+  };
 
   const onConnect = useCallback(
     (connection: Connection | Edge) => {
-      const id = `edge-${Date.now()}`;
       addEdgeToStore({
-        id,
+        id: `edge-${Date.now()}`,
         source: connection.source!,
         target: connection.target!,
       });
@@ -40,20 +66,56 @@ export default function WorkflowCanvas() {
     [addEdgeToStore]
   );
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        if (!selectedNodeId) return;
+
+        removeNode(selectedNodeId);
+        setSelectedNodeId(null);
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [selectedNodeId]);
+
   return (
     <div style={{ width: "100%", height: "100vh" }}>
       <ReactFlow
-        nodes={workflow.nodes}
-        edges={workflow.edges}
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        onNodesChange={handleNodesChange}
+        onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-	nodeTypes={nodeTypes}
-	onNodeClick={(_, node) => setSelectedNode(node.id)}
-	onPaneClick={() => setSelectedNode(undefined)}
+        onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+        onPaneClick={() => setSelectedNodeId(null)}
         fitView
       >
         <Background />
         <Controls />
-        <MiniMap />
+        <MiniMap
+  nodeStrokeColor={(node) => {
+    return {
+      start: "#16a34a",
+      task: "#2563eb",
+      approval: "#d97706",
+      automated: "#7c3aed",
+      end: "#dc2626",
+    }[node.type] || "#000";
+  }}
+  nodeColor={(node) => {
+    return {
+      start: "#a7f3d0",
+      task: "#bfdbfe",
+      approval: "#fde68a",
+      automated: "#ddd6fe",
+      end: "#fecaca",
+    }[node.type] || "#fff";
+  }}
+  nodeBorderRadius={6}
+/>
       </ReactFlow>
     </div>
   );
