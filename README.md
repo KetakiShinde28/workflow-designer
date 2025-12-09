@@ -104,9 +104,6 @@ npm install
 
 npm run dev
 
-
----
-
 ---
 
 ## 🐞 Tricky Frontend Bug I Solved
