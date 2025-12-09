@@ -104,3 +104,30 @@ npm install
 
 npm run dev
 
+
+---
+
+---
+
+## 🐞 Tricky Frontend Bug I Solved
+
+While building this project, I encountered a tricky issue where the **Node Editor Panel** stopped opening even when nodes were being selected on the canvas. The selection logic was correct, but the panel never updated.
+
+After debugging, I discovered the root cause:
+
+- The editor panel was listening for `selectedNodeId`
+- But the canvas was updating a different state field called `selectedElement`
+- Since the state between components wasn’t aligned, the UI never re-rendered
+
+To fix this, I consolidated the selection system into a single shared Zustand state (`selectedNodeId`) and updated the canvas to set that value directly. Once both components used the same source of truth, the side panel immediately began working again.
+
+This bug taught me the importance of:
+- Keeping **consistent global state** across components
+- Avoiding duplicate or overlapping state fields
+- Ensuring UI components subscribe to the correct reactive state
+
+It was a great debugging experience in state management and UI reactivity.
+
+---
+
+
